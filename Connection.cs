@@ -46,7 +46,8 @@ class Connection
             antenna2 = new Complex[2048];
         }
         //client.Connect(IPAddress.Loopback, 5797);
-        client.Connect(IPEndPoint.Parse("[2403:580c:7a4a:5::7]:5797"));
+        //client.Connect(IPEndPoint.Parse("[2403:580c:7a4a::43]:5797"));
+        client.Connect(IPEndPoint.Parse("[2403:580c:7a4a::5]:5797"));
         readThread = new Thread(new ThreadStart(ConnectionLoop));
         readThread.Name = "ConnectionLoop";
         readThread.Start();
@@ -117,7 +118,7 @@ class Connection
                 }
                 if (!Settings.ENABLE_AUDIO)
                 {
-                    vfo.SkipSamples(9*1024);
+                    vfo.SkipSamples(4*1024);
                 }
                 fft1Event.Set();
                 fft2Event.Set();

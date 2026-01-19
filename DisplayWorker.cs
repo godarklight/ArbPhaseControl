@@ -175,6 +175,14 @@ class DisplayWorker
             {
                 atReference = true;
             }
+            if (ant1.Magnitude > 2.0)
+            {
+                agc = agc / ant1.Magnitude;
+            }
+            if (ant2.Magnitude > 2.0)
+            {
+                agc = agc / ant2.Magnitude;
+            }
             if (i > 256 && i < 512)
             {
                 DrawRedDot(ant1);
@@ -193,7 +201,7 @@ class DisplayWorker
         }
         if (!Settings.ENABLE_AUDIO)
         {
-            khzoffset.SkipSamples(1024 * 9);
+            khzoffset.SkipSamples(1024 * 4);
         }
         if (Settings.ENABLE_AUDIO)
         {

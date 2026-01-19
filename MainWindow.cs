@@ -60,7 +60,7 @@ namespace ArbPhaseControl
         private void ClickEvent(object sender, ButtonPressEventArgs args)
         {
             uint mouseButton = args.Event.Button;
-            Console.WriteLine("Click " + mouseButton);
+            //Console.WriteLine("Click " + mouseButton);
             double midpoint = DisplayWorker.WIDTH_HEIGHT / 2.0;
             double clickx = (args.Event.X - midpoint) / midpoint;
             double clicky = -(args.Event.Y - midpoint) / midpoint;
