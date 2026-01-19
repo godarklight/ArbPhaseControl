@@ -17,7 +17,7 @@
     <property name="lower">7072245</property>
     <property name="upper">7166745</property>
     <property name="value">7132000</property>
-    <property name="step-increment">1</property>
+    <property name="step-increment">0.10</property>
     <property name="page-increment">1000</property>
   </object>
   <object class="GtkWindow" id="MainWindow">
@@ -186,6 +186,7 @@
                 <property name="width-chars">10</property>
                 <property name="text" translatable="yes">0.0</property>
                 <property name="adjustment">adj_vfo</property>
+                <property name="digits">1</property>
                 <property name="value">7132000</property>
               </object>
               <packing>
@@ -218,6 +219,19 @@
                 <property name="expand">True</property>
                 <property name="fill">True</property>
                 <property name="position">3</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="frontBackLevel">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="label" translatable="yes">Front-Back: 0.0 db</property>
+                <property name="justify">right</property>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
+                <property name="position">4</property>
               </packing>
             </child>
           </object>

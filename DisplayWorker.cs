@@ -14,12 +14,13 @@ class DisplayWorker
     byte[] currentData = new byte[WIDTH_HEIGHT * row];
     byte[] nextData = new byte[WIDTH_HEIGHT * row];
     Connection connection;
-    Action<byte[], double, double, double> callback;
-    double agc = 1.0;
-    double agcmax = 100000;
+    Action<byte[], double, double, double, double> callback;
+    //double agc = 1.0;
+    //double agcmax = 100000;
     double channel1Level = 0;
     double channel2Level = 0;
     double combinedLevel = 0;
+    double reverseLevel = 0;
     Vfo khzoffset = new Vfo(96000);
     public Complex averagePhase = Complex.Zero;
 
@@ -31,7 +32,7 @@ class DisplayWorker
         khzoffset.SetFrequency(1000);
     }
 
-    public void Register(Action<byte[], double, double, double> callback)
+    public void Register(Action<byte[], double, double, double, double> callback)
     {
         this.callback = callback;
     }
@@ -74,8 +75,14 @@ class DisplayWorker
 
     private void DrawRedDot(Complex c)
     {
-        int x = (int)((WIDTH_HEIGHT / 2) + (WIDTH_HEIGHT / 4) * c.Real);
-        int y = (int)((WIDTH_HEIGHT / 2) + (WIDTH_HEIGHT / 4) * c.Imaginary);
+        double dbFS = 20 * Math.Log10(c.Magnitude);
+        dbFS = Math.Clamp(dbFS, Settings.minDBFS, Settings.maxDBFS);
+        dbFS -= Settings.minDBFS;
+        dbFS /= Settings.maxDBFS - Settings.minDBFS;
+        //dbFS range is now 0-1.
+        c = Complex.FromPolarCoordinates(dbFS, c.Phase);
+        int x = (int)((WIDTH_HEIGHT / 2) + (WIDTH_HEIGHT / 2) * c.Real);
+        int y = (int)((WIDTH_HEIGHT / 2) + (WIDTH_HEIGHT / 2) * c.Imaginary);
         if (x < 0 || x > (WIDTH_HEIGHT - 1))
         {
             return;
@@ -95,8 +102,14 @@ class DisplayWorker
     }
     private void DrawGreenDot(Complex c)
     {
-        int x = (int)((WIDTH_HEIGHT / 2) + (WIDTH_HEIGHT / 4) * c.Real);
-        int y = (int)((WIDTH_HEIGHT / 2) + (WIDTH_HEIGHT / 4) * c.Imaginary);
+        double dbFS = 20 * Math.Log10(c.Magnitude);
+        dbFS = Math.Clamp(dbFS, Settings.minDBFS, Settings.maxDBFS);
+        dbFS -= Settings.minDBFS;
+        dbFS /= Settings.maxDBFS - Settings.minDBFS;
+        //dbFS range is now 0-1.
+        c = Complex.FromPolarCoordinates(dbFS, c.Phase);
+        int x = (int)((WIDTH_HEIGHT / 2) + (WIDTH_HEIGHT / 2) * c.Real);
+        int y = (int)((WIDTH_HEIGHT / 2) + (WIDTH_HEIGHT / 2) * c.Imaginary);
         if (x < 0 || x > (WIDTH_HEIGHT - 1))
         {
             return;
@@ -117,6 +130,13 @@ class DisplayWorker
 
     private void DrawPhaseDot(Complex c)
     {
+        //Take the square root on the phased magnitude because both antennas are multiplied together.
+        double dbFS = 20 * Math.Log10(Math.Sqrt(c.Magnitude));
+        dbFS = Math.Clamp(dbFS, Settings.minDBFS, Settings.maxDBFS);
+        dbFS -= Settings.minDBFS;
+        dbFS /= Settings.maxDBFS - Settings.minDBFS;
+        //dbFS range is now 0-1.
+        c = Complex.FromPolarCoordinates(dbFS, c.Phase);
         int x = (int)((WIDTH_HEIGHT / 2) + (WIDTH_HEIGHT / 4) * c.Real);
         int y = (int)((WIDTH_HEIGHT / 2) + (WIDTH_HEIGHT / 4) * c.Imaginary);
         if (x < 0 || x >= (WIDTH_HEIGHT - 1))
@@ -156,15 +176,18 @@ class DisplayWorker
                 channel1Level = 0.99999 * channel1Level + 0.00001 * ant1.Magnitude;
                 channel2Level = 0.99999 * channel2Level + 0.00001 * ant2.Magnitude;
                 combinedLevel = 0.99999 * combinedLevel + 0.00001 * (ant1 + ant2).Magnitude;
+                reverseLevel = 0.99999 * combinedLevel + 0.00001 * (ant1 - ant2).Magnitude;
             }
             else
             {
                 channel1Level = 0.9999 * channel1Level + 0.0001 * ant1.Magnitude;
                 channel2Level = 0.9999 * channel2Level + 0.0001 * ant2.Magnitude;
                 combinedLevel = 0.9999 * combinedLevel + 0.0001 * (ant1 + ant2).Magnitude;
+                reverseLevel = 0.9999 * reverseLevel + 0.0001 * (ant1 - ant2).Magnitude;
             }
 
 
+            /*
             ant1 = ant1 * agc;
             ant2 = ant2 * agc;
             if (ant1.Magnitude > 1.0)
@@ -183,6 +206,7 @@ class DisplayWorker
             {
                 agc = agc / ant2.Magnitude;
             }
+            */
             if (i > 256 && i < 512)
             {
                 DrawRedDot(ant1);
@@ -203,6 +227,7 @@ class DisplayWorker
         {
             khzoffset.SkipSamples(1024 * 4);
         }
+        /*
         if (Settings.ENABLE_AUDIO)
         {
             if (!atReference)
@@ -225,11 +250,11 @@ class DisplayWorker
                 agc *= 0.97;
             }
         }
-
+        */
         //Swap buffer and call
         byte[] temp = currentData;
         currentData = nextData;
         nextData = temp;
-        callback(currentData, channel1Level, channel2Level, combinedLevel);
+        callback(currentData, channel1Level, channel2Level, combinedLevel, reverseLevel);
     }
 }

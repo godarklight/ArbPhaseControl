@@ -24,6 +24,7 @@ namespace ArbPhaseControl
         [UI] private Label channel1Level = null;
         [UI] private Label channel2Level = null;
         [UI] private Label combinedLevel = null;
+        [UI] private Label frontBackLevel = null;
 
         bool running = true;
         bool send = false;
@@ -122,7 +123,7 @@ namespace ArbPhaseControl
             connection.SetFrequency((float)spin_vfo.Value);
         }
 
-        private void DrawMain(byte[] pixels, double level1, double level2, double combined)
+        private void DrawMain(byte[] pixels, double level1, double level2, double combined, double reverse)
         {
             Application.Invoke((o, e) =>
             {
@@ -130,6 +131,8 @@ namespace ArbPhaseControl
                 level1db = 20 * Math.Log10(level1);
                 level2db = 20 * Math.Log10(level2);
                 double combineddb = 20 * Math.Log10(combined);
+                double reversedb = 20 * Math.Log10(reverse);
+
                 if (level1db < -140)
                 {
                     level1db = -140;
@@ -142,9 +145,15 @@ namespace ArbPhaseControl
                 {
                     combineddb = -140;
                 }
+                if (reversedb < -140)
+                {
+                    reversedb = -140;
+                }
+                double fbRatio = combineddb - reversedb;
                 channel1Level.Text = "Channel 1: " + level1db.ToString("N1") + "db";
                 channel2Level.Text = "Channel 2: " + level2db.ToString("N1") + "db";
                 combinedLevel.Text = "Combined: " + combineddb.ToString("N1") + "db";
+                frontBackLevel.Text = "Front-Back: " + fbRatio.ToString("N1") + "db";
             });
         }
     }
